@@ -1,29 +1,38 @@
 
-document.addEventListener("DOMContentLoaded", function() {
-    const loginForm = document.getElementById('loginForm');
-    const logoutButton = document.getElementById('logoutButton');
+// Ensure the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', () => {
+    const loginForm = document.querySelector('#loginForm');
     
     if (loginForm) {
-        loginForm.addEventListener('submit', function(event) {
-            event.preventDefault();
-            // Example: Hardcoded login credentials
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            if (username === 'admin' && password === 'password123') {
-                localStorage.setItem('isLoggedIn', 'true');
-                alert('Login successful!');
-                window.location.href = 'dashboard.html';
-            } else {
-                alert('Invalid credentials!');
-            }
-        });
-    }
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
 
-    if (logoutButton) {
-        logoutButton.addEventListener('click', function() {
-            localStorage.removeItem('isLoggedIn');
-            alert('Logged out successfully!');
-            window.location.href = 'login.html';
+            const username = document.querySelector('#username').value.trim();
+            const password = document.querySelector('#password').value.trim();
+
+            if (!username || !password) {
+                alert('Please enter both username and password.');
+                return;
+            }
+
+            try {
+                const response = await fetch('authenticate.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                const data = await response.json();
+
+                if (data.success) {
+                    window.location.href = 'admin_dashboard.html';
+                } else {
+                    alert(data.message || 'Invalid login credentials.');
+                }
+            } catch (error) {
+                console.error('Error logging in:', error);
+                alert('An error occurred. Please try again later.');
+            }
         });
     }
 });
